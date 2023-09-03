@@ -7,20 +7,18 @@ import java.util.List;
 
 @Service
 public class OrderService {
-    @Autowired
-    OrderRepository orderRepository;
+    //    @Autowired
+    OrderRepository orderRepository = new OrderRepository();
 
     public void addOrder(Order order) {
         orderRepository.addOrder(order);
     }
 
     public void addPartner(String partnerId) {
-        DeliveryPartner partner= new DeliveryPartner(partnerId);
-        orderRepository.addPartner(partner);
+        orderRepository.addPartner(partnerId);
     }
 
     public void addOrderPartnerPair(String orderId, String partnerId) {
-
         orderRepository.addOrderPartnerPair(orderId, partnerId);
     }
 
@@ -32,51 +30,46 @@ public class OrderService {
         return orderRepository.getPartnerById(partnerId);
     }
 
-    public List<String> getOrdersByPartnerId(String partnerId) {
-        return orderRepository.getOrdersByPartnerId(partnerId);
-    }
-
     public Integer getOrderCountByPartnerId(String partnerId) {
         return orderRepository.getOrderCountByPartnerId(partnerId);
     }
 
+    public List<String> getOrdersByPartnerId(String partnerId) {
+        return orderRepository.getOrdersByPartnerId(partnerId);
+    }
 
     public List<String> getAllOrders() {
         return orderRepository.getAllOrders();
     }
 
     public Integer getCountOfUnassignedOrders() {
-       return orderRepository.getCountOfUnassignedOrders();
+        return orderRepository.getCountOfUnassignedOrders();
     }
 
     public Integer getOrdersLeftAfterGivenTimeByPartnerId(String time, String partnerId) {
-        int cnt=0;
-        int  timeInMM;   // HH:MM => HH*60 + MM
-        for(String orderId : getOrdersByPartnerId(partnerId)){
-            timeInMM= Integer.valueOf(time.substring(0, 2))*60 + Integer.valueOf(time.substring(3));
-            if(timeInMM < getOrderById(orderId).getDeliveryTime()){
-                cnt++;
-            }
-        }
-        return cnt;
+        // convert time
+        String Time[] = time.split(":");
+        String hour = Time[0];
+        String minute = Time[1];
+        int deliveryTime = Integer.parseInt(hour) * 60 + Integer.parseInt(minute);
+        return orderRepository.getOrdersLeftAfterGivenTimeByPartnerId(deliveryTime, partnerId);
     }
 
     public String getLastDeliveryTimeByPartnerId(String partnerId) {
-        int timeInMM=0;
-        for(String orderId: getOrdersByPartnerId(partnerId)){
-            timeInMM= Math.max(timeInMM, getOrderById(orderId).getDeliveryTime());
+        int latestDeliveryTime = orderRepository.getLastDeliveryTimeByPartnerId(partnerId);
+        // Convert time to String (HH:MM) format before sending
+        String hour;
+        hour = String.valueOf(latestDeliveryTime / 60);
+        String minute;
+        minute = String.valueOf(latestDeliveryTime % 60);
+
+        if(hour.length() < 2){
+            hour = "0" + hour;
         }
-        String time="";
-        if(timeInMM/60<=9){
-            time+="0"+timeInMM/60;
+        if(minute.length() < 2){
+            minute = "0" + minute;
         }
-        else time=time+timeInMM/60;
-        time+=":";
-        if(timeInMM%60<=9){
-            time+="0"+timeInMM%60;
-        }
-        else time=time+timeInMM%60;
-        return time;
+        return hour + ":" + minute;
     }
 
     public void deletePartnerById(String partnerId) {
@@ -85,6 +78,5 @@ public class OrderService {
 
     public void deleteOrderById(String orderId) {
         orderRepository.deleteOrderById(orderId);
-
     }
 }
