@@ -21,6 +21,7 @@ public class OrderRepository {
 
     public void addPartner(DeliveryPartner partner) {
         partnerHashMap.put(partner.getId(), partner);
+
     }
 
     public void addOrderPartnerPair(String orderId, String partnerId) {
@@ -32,6 +33,7 @@ public class OrderRepository {
             partner_orders.put(partnerId, new ArrayList<String>());
             partner_orders.get(partnerId).add(orderId);
         }
+        partnerHashMap.get(partnerId).setNumberOfOrders(partnerHashMap.get(partnerId).getNumberOfOrders()+1);
     }
 
     public Order getOrderById(String orderId) {
@@ -43,18 +45,19 @@ public class OrderRepository {
     }
 
     public List<String> getOrdersByPartnerId(String partnerId) {
-        return partner_orders.get(partnerId);
+        List<String> ans= new ArrayList<>();
+        if(partner_orders.containsKey(partnerId)) ans=partner_orders.get(partnerId);
+        return ans;
     }
 
     public List<String> getAllOrders() {
         return new ArrayList<>(orderHashMap.keySet());
     }
 
-    public boolean isOrderAssigned(String orderId) {
-        return order_partner.containsKey(orderId);
-    }
-
     public void deletePartnerById(String partnerId) {
+        for(String orderId: partner_orders.get(partnerId)){
+            order_partner.remove(orderId);
+        }
         partner_orders.remove(partnerId);
         partnerHashMap.remove(partnerId);
     }
@@ -67,6 +70,15 @@ public class OrderRepository {
             idx++;
         }
         partner_orders.get(order_partner.get(orderId)).remove(idx);
+        partnerHashMap.get(order_partner.get(orderId)).setNumberOfOrders(partner_orders.get(order_partner.get(orderId)).size());
         order_partner.remove(orderId);
+    }
+
+    public Integer getCountOfUnassignedOrders() {
+        return orderHashMap.size()-order_partner.size();
+    }
+
+    public Integer getOrderCountByPartnerId(String partnerId) {
+        return partnerHashMap.get(partnerId).getNumberOfOrders();
     }
 }

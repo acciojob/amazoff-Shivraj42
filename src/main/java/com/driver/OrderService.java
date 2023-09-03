@@ -37,8 +37,7 @@ public class OrderService {
     }
 
     public Integer getOrderCountByPartnerId(String partnerId) {
-        List<String> orders= getOrdersByPartnerId(partnerId);
-        return orders.size();
+        return orderRepository.getOrderCountByPartnerId(partnerId);
     }
 
 
@@ -47,11 +46,7 @@ public class OrderService {
     }
 
     public Integer getCountOfUnassignedOrders() {
-        int cnt=0;
-        for(String orderId: getAllOrders()){
-            if(!orderRepository.isOrderAssigned(orderId))cnt++;
-        }
-        return cnt;
+       return orderRepository.getCountOfUnassignedOrders();
     }
 
     public Integer getOrdersLeftAfterGivenTimeByPartnerId(String time, String partnerId) {
@@ -71,7 +66,17 @@ public class OrderService {
         for(String orderId: getOrdersByPartnerId(partnerId)){
             timeInMM= Math.max(timeInMM, getOrderById(orderId).getDeliveryTime());
         }
-        return ""+timeInMM/60+":"+timeInMM%60;
+        String time="";
+        if(timeInMM/60<=9){
+            time+="0"+timeInMM/60;
+        }
+        else time=time+timeInMM/60;
+        time+=":";
+        if(timeInMM%60<=9){
+            time+="0"+timeInMM%60;
+        }
+        else time=time+timeInMM%60;
+        return time;
     }
 
     public void deletePartnerById(String partnerId) {
