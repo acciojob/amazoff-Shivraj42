@@ -2,12 +2,13 @@ package com.driver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
 @Service
 public class OrderService {
-    //    @Autowired
+
     OrderRepository orderRepository = new OrderRepository();
 
     public void addOrder(Order order) {
@@ -18,12 +19,14 @@ public class OrderService {
         orderRepository.addPartner(partnerId);
     }
 
+
     public void addOrderPartnerPair(String orderId, String partnerId) {
-        orderRepository.addOrderPartnerPair(orderId, partnerId);
+        orderRepository.addOrderPartnerPair(orderId , partnerId);
     }
 
     public Order getOrderById(String orderId) {
-        return orderRepository.getOrderById(orderId);
+        Order order = orderRepository.getOrderById(orderId);
+        return order;
     }
 
     public DeliveryPartner getPartnerById(String partnerId) {
@@ -47,29 +50,25 @@ public class OrderService {
     }
 
     public Integer getOrdersLeftAfterGivenTimeByPartnerId(String time, String partnerId) {
-        // convert time
-        String Time[] = time.split(":");
-        String hour = Time[0];
-        String minute = Time[1];
-        int deliveryTime = Integer.parseInt(hour) * 60 + Integer.parseInt(minute);
-        return orderRepository.getOrdersLeftAfterGivenTimeByPartnerId(deliveryTime, partnerId);
+        String[] arr = time.split(":");
+        int newTime = Integer.parseInt(arr[0]) * 60 + Integer.parseInt(arr[1]);
+        return orderRepository.getOrdersLeftAfterGivenTimeByPartnerId(newTime , partnerId);
     }
 
     public String getLastDeliveryTimeByPartnerId(String partnerId) {
-        int latestDeliveryTime = orderRepository.getLastDeliveryTimeByPartnerId(partnerId);
-        // Convert time to String (HH:MM) format before sending
-        String hour;
-        hour = String.valueOf(latestDeliveryTime / 60);
-        String minute;
-        minute = String.valueOf(latestDeliveryTime % 60);
+        int time = orderRepository.getLastDeliveryTimeByPartnerId(partnerId);
 
-        if(hour.length() < 2){
-            hour = "0" + hour;
+        String HH = String.valueOf(time / 60);
+        String MM = String.valueOf(time % 60);
+
+        if(HH.length() < 2){
+            HH = 0 + HH;
         }
-        if(minute.length() < 2){
-            minute = "0" + minute;
+        if(MM.length() < 2){
+            MM = 0 + MM;
         }
-        return hour + ":" + minute;
+
+        return HH+':'+MM;
     }
 
     public void deletePartnerById(String partnerId) {
